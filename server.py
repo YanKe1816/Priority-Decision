@@ -31,12 +31,86 @@ WEIGHT_IMPACT = 0.45
 WEIGHT_EFFORT = 0.10
 
 
-PROJECT_ROOT = Path(__file__).resolve().parent
-STATIC_PAGES = {
-    "/privacy": PROJECT_ROOT / "privacy.html",
-    "/terms": PROJECT_ROOT / "terms.html",
-    "/support": PROJECT_ROOT / "support.html",
-}
+PRIVACY_TEXT = f"""Privacy Policy for {APP_NAME}
+
+Effective date: 2026-04-20
+
+1) Data Categories Collected
+- Task payload content submitted to /mcp for processing:
+  - name (task title)
+  - urgency (numeric)
+  - impact (numeric)
+  - effort (numeric)
+- Technical request metadata:
+  - timestamp
+  - request path
+  - response status code
+  - process-level error traces (when errors occur)
+
+2) Data Usage
+- Submitted task data is used only to compute a deterministic priority ranking.
+- Data is not used for advertising, profiling, model training, or resale.
+- Request metadata is used for service reliability, monitoring, and abuse prevention.
+
+3) Storage and Retention
+- The service is designed to be stateless for business data.
+- Task payloads are processed in-memory and not persisted in application storage.
+- Infrastructure or platform logs may temporarily retain request metadata according to host defaults.
+
+4) Logging
+- Application logs may include non-sensitive operational details and exception traces.
+- Avoid sending highly sensitive personal information in task names.
+
+5) Data Sharing
+- No intentional sharing of task payload data with third parties beyond required hosting infrastructure.
+
+6) Security
+- TLS/HTTPS should be enforced at deployment edge (e.g., Render managed TLS).
+- Access is restricted to exposed HTTP endpoints documented by this service.
+
+7) User Rights / Contact
+- For privacy requests or questions, contact: {SUPPORT_EMAIL}
+"""
+
+TERMS_TEXT = f"""Terms of Service for {APP_NAME}
+
+Effective date: 2026-04-20
+
+1) Service Scope
+- This app ranks tasks by urgency, impact, and effort.
+- It does not schedule tasks or generate long-term plans.
+
+2) No Professional Advice
+- Outputs are informational and provided "as is" without warranty.
+- Users remain responsible for final decisions and outcomes.
+
+3) Acceptable Use
+- Do not submit unlawful, abusive, or malicious content.
+- Do not attempt to disrupt service availability.
+
+4) Availability
+- Service may change, be interrupted, or discontinued at any time.
+- Best effort is made for stability and responsiveness.
+
+5) Liability Limitation
+- To the maximum extent permitted by law, provider is not liable for indirect or consequential damages.
+
+6) Privacy
+- Use of the app is also governed by the Privacy Policy at /privacy.
+
+7) Contact
+- Support inquiries: {SUPPORT_EMAIL}
+"""
+
+SUPPORT_TEXT = f"""Support - {APP_NAME}
+
+Support email: {SUPPORT_EMAIL}
+
+Instructions:
+1) Include "Priority Decision" in your subject line.
+2) Share timestamp, endpoint, and sanitized request payload.
+3) For MCP issues, include method name and request id.
+"""
 
 
 class ValidationError(Exception):
@@ -294,9 +368,16 @@ class AppHandler(BaseHTTPRequestHandler):
             self._write(HTTPStatus.OK, "OK")
             return
 
-        static_path = STATIC_PAGES.get(self.path)
-        if static_path is not None:
-            self._write_static_html(static_path)
+        if self.path == "/privacy":
+            self._write(HTTPStatus.OK, PRIVACY_TEXT)
+            return
+
+        if self.path == "/terms":
+            self._write(HTTPStatus.OK, TERMS_TEXT)
+            return
+
+        if self.path == "/support":
+            self._write(HTTPStatus.OK, SUPPORT_TEXT)
             return
 
         if self.path == "/.well-known/openai-apps-challenge":
