@@ -31,6 +31,31 @@ WEIGHT_IMPACT = 0.45
 WEIGHT_EFFORT = 0.10
 
 
+PROJECT_ROOT = Path(__file__).resolve().parent
+STATIC_PAGES = {
+    "/privacy": PROJECT_ROOT / "privacy.html",
+    "/terms": PROJECT_ROOT / "terms.html",
+    "/support": PROJECT_ROOT / "support.html",
+}
+
+HOME_HTML = f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{APP_NAME}</title>
+</head>
+<body>
+  <h1>{APP_NAME}</h1>
+  <p>Helps users prioritize multiple tasks and choose the most important one based on urgency, impact, and effort.</p>
+  <nav>
+    <a href="/privacy">Privacy</a> |
+    <a href="/terms">Terms</a> |
+    <a href="/support">Support</a>
+  </nav>
+  <p>Support: <a href="mailto:{SUPPORT_EMAIL}">{SUPPORT_EMAIL}</a></p>
+</body>
+</html>
 PRIVACY_TEXT = f"""Privacy Policy for {APP_NAME}
 
 Effective date: 2026-04-20
@@ -364,20 +389,17 @@ class AppHandler(BaseHTTPRequestHandler):
         self._write(HTTPStatus.OK, body, content_type="text/html; charset=utf-8")
 
     def do_GET(self) -> None:
+        if self.path == "/":
+            self._write(HTTPStatus.OK, HOME_HTML, content_type="text/html; charset=utf-8")
+            return
+
         if self.path == "/health":
             self._write(HTTPStatus.OK, "OK")
             return
 
-        if self.path == "/privacy":
-            self._write(HTTPStatus.OK, PRIVACY_TEXT)
-            return
-
-        if self.path == "/terms":
-            self._write(HTTPStatus.OK, TERMS_TEXT)
-            return
-
-        if self.path == "/support":
-            self._write(HTTPStatus.OK, SUPPORT_TEXT)
+        static_path = STATIC_PAGES.get(self.path)
+        if static_path is not None:
+            self._write_static_html(static_path)
             return
 
         if self.path == "/.well-known/openai-apps-challenge":
