@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Priority Decision - Privacy Policy</title>
+</head>
+<body>
+  <h1>Privacy Policy for Priority Decision</h1>
+  <p><strong>Effective date:</strong> 2026-04-20</p>
+
+  <h2>1) Data Categories Collected</h2>
+  <ul>
+    <li>Task payload content submitted to <code>/mcp</code> for processing:
+      <ul>
+        <li>name (task title)</li>
+        <li>urgency (numeric)</li>
+        <li>impact (numeric)</li>
+        <li>effort (numeric)</li>
+      </ul>
+    </li>
+    <li>Technical request metadata:
+      <ul>
+        <li>timestamp</li>
+        <li>request path</li>
+        <li>response status code</li>
+        <li>process-level error traces (when errors occur)</li>
+      </ul>
+    </li>
+  </ul>
+
+  <h2>2) Data Usage</h2>
+  <ul>
+    <li>Submitted task data is used only to compute a deterministic priority ranking.</li>
+    <li>Data is not used for advertising, profiling, model training, or resale.</li>
+    <li>Request metadata is used for service reliability, monitoring, and abuse prevention.</li>
+  </ul>
+
+  <h2>3) Storage and Retention</h2>
+  <ul>
+    <li>The service is designed to be stateless for business data.</li>
+    <li>Task payloads are processed in-memory and not persisted in application storage.</li>
+    <li>Infrastructure or platform logs may temporarily retain request metadata according to host defaults.</li>
+  </ul>
+
+  <h2>4) Logging</h2>
+  <ul>
+    <li>Application logs may include non-sensitive operational details and exception traces.</li>
+    <li>Avoid sending highly sensitive personal information in task names.</li>
+  </ul>
+
+  <h2>5) Data Sharing</h2>
+  <p>No intentional sharing of task payload data with third parties beyond required hosting infrastructure.</p>
+
+  <h2>6) Security</h2>
+  <ul>
+    <li>TLS/HTTPS should be enforced at deployment edge (e.g., Render managed TLS).</li>
+    <li>Access is restricted to exposed HTTP endpoints documented by this service.</li>
+  </ul>
+
+  <h2>7) User Rights / Contact</h2>
+  <p>For privacy requests or questions, contact: <a href="mailto:sidcraigau@gmail.com">sidcraigau@gmail.com</a>.</p>
+</body>
+</html>

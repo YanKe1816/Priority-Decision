@@ -10,6 +10,7 @@ import json
 import math
 import os
 import traceback
+from pathlib import Path
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Dict, List, Tuple
@@ -353,6 +354,14 @@ class AppHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)
+
+    def _write_static_html(self, path: Path) -> None:
+        try:
+            body = path.read_text(encoding="utf-8")
+        except FileNotFoundError:
+            self._write(HTTPStatus.NOT_FOUND, "Not Found")
+            return
+        self._write(HTTPStatus.OK, body, content_type="text/html; charset=utf-8")
 
     def do_GET(self) -> None:
         if self.path == "/health":
