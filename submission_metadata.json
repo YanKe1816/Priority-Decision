@@ -1,0 +1,80 @@
+{
+  "metadata": {
+    "app_name": "Priority Decision",
+    "version": "1.0.0",
+    "description": "Determines the top-priority task from a list of tasks based on urgency, impact, and effort.",
+    "support_email": "sidcraigau@gmail.com",
+    "entrypoint": "python server.py",
+    "host": "0.0.0.0",
+    "port_env": "PORT",
+    "https_required": true,
+    "stateless": true,
+    "deterministic_outputs": true
+  },
+  "mcp": {
+    "endpoint": "/mcp",
+    "jsonrpc": "2.0",
+    "supported_methods": ["initialize", "tools/list", "tools/call"],
+    "tool_name": "priority_decision"
+  },
+  "routes": [
+    {"method": "GET", "path": "/health", "expected_status": 200},
+    {"method": "POST", "path": "/mcp", "expected_status": 200},
+    {"method": "GET", "path": "/privacy", "expected_status": 200},
+    {"method": "GET", "path": "/terms", "expected_status": 200},
+    {"method": "GET", "path": "/support", "expected_status": 200},
+    {
+      "method": "GET",
+      "path": "/.well-known/openai-apps-challenge",
+      "expected_status": 200,
+      "source": "OPENAI_APPS_CHALLENGE env var"
+    }
+  ],
+  "assets": {
+    "icon": "assets/icon.png",
+    "screenshots": [
+      "assets/screenshots/health.png",
+      "assets/screenshots/mcp-tools-call.png"
+    ],
+    "demo_video": "assets/demo/priority-decision-demo.mp4"
+  },
+  "legal": {
+    "privacy_route": "/privacy",
+    "terms_route": "/terms",
+    "support_route": "/support"
+  },
+  "localization": {
+    "default_locale": "en-US",
+    "supported_locales": ["en-US"]
+  },
+  "triggers": {
+    "direct": [
+      "Prioritize these tasks now.",
+      "Find my top-priority task from this list."
+    ],
+    "natural_expression": [
+      "What should I do first today from this list?",
+      "Can you help me decide the single most important task?"
+    ],
+    "negative": [
+      "Create a two-week task schedule with deadlines."
+    ]
+  },
+  "performance": {
+    "first_response_target_seconds": 5,
+    "cold_start_acceptable": true,
+    "continuous_3_call_stability": true
+  },
+  "testing_reference": {
+    "test_cases_file": "test_cases.json",
+    "preserve_testing_phase_cases": true
+  },
+  "expected_tool_output_contract": {
+    "structuredContent": {
+      "priority_order": ["string"],
+      "first_task": "string",
+      "reason": "string",
+      "confidence": "float"
+    }
+  }
+}

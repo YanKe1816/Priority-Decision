@@ -1,0 +1,279 @@
+{
+  "app": {
+    "name": "Priority Decision",
+    "version": "1.0.0"
+  },
+  "testing_phase": {
+    "notes": [
+      "Deterministic outputs are required; same input must produce same ranking.",
+      "Tool scope excludes scheduling and long-term planning.",
+      "Score formula: score = 0.45*urgency + 0.45*impact + 0.10*(10-effort).",
+      "Confidence formula: confidence = min(0.99, 0.55 + (top_score - second_score)/10).",
+      "Stateless behavior: repeated identical requests must return identical structuredContent."
+    ],
+    "positive_triggers": [
+      {
+        "id": "P1",
+        "trigger": "Prioritize these tasks by urgency, impact, and effort.",
+        "rpc_request": {
+          "jsonrpc": "2.0",
+          "id": "P1",
+          "method": "tools/call",
+          "params": {
+            "name": "priority_decision",
+            "arguments": {
+              "tasks": [
+                {"name": "Submit tax filing", "urgency": 9, "impact": 10, "effort": 4},
+                {"name": "Clean inbox", "urgency": 6, "impact": 4, "effort": 3},
+                {"name": "Prepare demo", "urgency": 8, "impact": 9, "effort": 5}
+              ]
+            }
+          }
+        },
+        "expected_structuredContent": {
+          "priority_order": ["Submit tax filing", "Prepare demo", "Clean inbox"],
+          "first_task": "Submit tax filing",
+          "reason": "'Submit tax filing' ranks first due to high urgency (9.0), high impact (10.0), and manageable effort (4.0).",
+          "confidence": 0.65
+        },
+        "official_verifiable": {
+          "calculation_notes": [
+            "Submit tax filing: 0.45*9 + 0.45*10 + 0.10*(10-4) = 9.15",
+            "Prepare demo: 0.45*8 + 0.45*9 + 0.10*(10-5) = 8.15",
+            "Clean inbox: 0.45*6 + 0.45*4 + 0.10*(10-3) = 5.20",
+            "confidence = min(0.99, 0.55 + (9.15-8.15)/10) = 0.65"
+          ]
+        }
+      },
+      {
+        "id": "P2",
+        "trigger": "Which task should I do first right now?",
+        "rpc_request": {
+          "jsonrpc": "2.0",
+          "id": "P2",
+          "method": "tools/call",
+          "params": {
+            "name": "priority_decision",
+            "arguments": {
+              "tasks": [
+                {"name": "Fix production bug", "urgency": 10, "impact": 10, "effort": 6},
+                {"name": "Refactor helper module", "urgency": 4, "impact": 6, "effort": 7}
+              ]
+            }
+          }
+        },
+        "expected_structuredContent": {
+          "priority_order": ["Fix production bug", "Refactor helper module"],
+          "first_task": "Fix production bug",
+          "reason": "'Fix production bug' ranks first due to high urgency (10.0), high impact (10.0), and manageable effort (6.0).",
+          "confidence": 0.99
+        },
+        "official_verifiable": {
+          "calculation_notes": [
+            "Fix production bug: 0.45*10 + 0.45*10 + 0.10*(10-6) = 9.40",
+            "Refactor helper module: 0.45*4 + 0.45*6 + 0.10*(10-7) = 4.80",
+            "confidence = min(0.99, 0.55 + (9.40-4.80)/10) = 0.99"
+          ]
+        }
+      },
+      {
+        "id": "P3",
+        "trigger": "Rank this backlog quickly.",
+        "rpc_request": {
+          "jsonrpc": "2.0",
+          "id": "P3",
+          "method": "tools/call",
+          "params": {
+            "name": "priority_decision",
+            "arguments": {
+              "tasks": [
+                {"name": "Patch security vulnerability", "urgency": 10, "impact": 10, "effort": 5},
+                {"name": "Update slide deck", "urgency": 5, "impact": 3, "effort": 2},
+                {"name": "Customer escalation follow-up", "urgency": 9, "impact": 8, "effort": 3},
+                {"name": "Write team newsletter", "urgency": 2, "impact": 2, "effort": 3}
+              ]
+            }
+          }
+        },
+        "expected_structuredContent": {
+          "priority_order": [
+            "Patch security vulnerability",
+            "Customer escalation follow-up",
+            "Update slide deck",
+            "Write team newsletter"
+          ],
+          "first_task": "Patch security vulnerability",
+          "reason": "'Patch security vulnerability' ranks first due to high urgency (10.0), high impact (10.0), and manageable effort (5.0).",
+          "confidence": 0.67
+        },
+        "official_verifiable": {
+          "calculation_notes": [
+            "Patch security vulnerability: 0.45*10 + 0.45*10 + 0.10*(10-5) = 9.50",
+            "Customer escalation follow-up: 0.45*9 + 0.45*8 + 0.10*(10-3) = 8.35",
+            "Update slide deck: 0.45*5 + 0.45*3 + 0.10*(10-2) = 4.40",
+            "Write team newsletter: 0.45*2 + 0.45*2 + 0.10*(10-3) = 2.50",
+            "confidence = min(0.99, 0.55 + (9.50-8.35)/10) = 0.665 -> 0.67"
+          ]
+        }
+      },
+      {
+        "id": "P4",
+        "trigger": "Use numeric decimals and still prioritize consistently.",
+        "rpc_request": {
+          "jsonrpc": "2.0",
+          "id": "P4",
+          "method": "tools/call",
+          "params": {
+            "name": "priority_decision",
+            "arguments": {
+              "tasks": [
+                {"name": "Draft contract", "urgency": 7.5, "impact": 8.5, "effort": 4.5},
+                {"name": "Book travel", "urgency": 6.5, "impact": 5.5, "effort": 2.0}
+              ]
+            }
+          }
+        },
+        "expected_structuredContent": {
+          "priority_order": ["Draft contract", "Book travel"],
+          "first_task": "Draft contract",
+          "reason": "'Draft contract' ranks first due to high urgency (7.5), high impact (8.5), and manageable effort (4.5).",
+          "confidence": 0.71
+        },
+        "official_verifiable": {
+          "calculation_notes": [
+            "Draft contract: 0.45*7.5 + 0.45*8.5 + 0.10*(10-4.5) = 7.75",
+            "Book travel: 0.45*6.5 + 0.45*5.5 + 0.10*(10-2.0) = 6.20",
+            "confidence = min(0.99, 0.55 + (7.75-6.20)/10) = 0.705 -> 0.71"
+          ]
+        }
+      },
+      {
+        "id": "P5",
+        "trigger": "Give me only the top priority task and why.",
+        "rpc_request": {
+          "jsonrpc": "2.0",
+          "id": "P5",
+          "method": "tools/call",
+          "params": {
+            "name": "priority_decision",
+            "arguments": {
+              "tasks": [
+                {"name": "Pay contractor invoice", "urgency": 8, "impact": 9, "effort": 2},
+                {"name": "Organize desktop files", "urgency": 3, "impact": 2, "effort": 2}
+              ]
+            }
+          }
+        },
+        "expected_structuredContent": {
+          "priority_order": ["Pay contractor invoice", "Organize desktop files"],
+          "first_task": "Pay contractor invoice",
+          "reason": "'Pay contractor invoice' ranks first due to high urgency (8.0), high impact (9.0), and manageable effort (2.0).",
+          "confidence": 0.99
+        },
+        "official_verifiable": {
+          "calculation_notes": [
+            "Pay contractor invoice: 0.45*8 + 0.45*9 + 0.10*(10-2) = 8.45",
+            "Organize desktop files: 0.45*3 + 0.45*2 + 0.10*(10-2) = 3.05",
+            "confidence = min(0.99, 0.55 + (8.45-3.05)/10) = 0.99"
+          ]
+        }
+      }
+    ],
+    "lateral_triggers": [
+      {
+        "id": "L1",
+        "trigger": "What should I tackle first from this to-do list?",
+        "expected_behavior": "Maps natural language to the same tools/call operation.",
+        "structuredContent_contract": {
+          "priority_order": "string[]",
+          "first_task": "string",
+          "reason": "string",
+          "confidence": "float"
+        }
+      },
+      {
+        "id": "L2",
+        "trigger": "Help me decide top priority, no timeline planning.",
+        "expected_behavior": "Returns ranking only and avoids scheduling suggestions.",
+        "structuredContent_contract": {
+          "priority_order": "string[]",
+          "first_task": "string",
+          "reason": "string",
+          "confidence": "float"
+        }
+      },
+      {
+        "id": "L3",
+        "trigger": "Pick winner task using urgency/impact/effort weighting.",
+        "expected_behavior": "Uses deterministic weighted scoring and confidence formula.",
+        "structuredContent_contract": {
+          "priority_order": "string[]",
+          "first_task": "string",
+          "reason": "string",
+          "confidence": "float"
+        }
+      }
+    ],
+    "negative_triggers": [
+      {
+        "id": "N1-missing-fields",
+        "trigger": "Task object missing effort.",
+        "rpc_request": {
+          "jsonrpc": "2.0",
+          "id": "N1",
+          "method": "tools/call",
+          "params": {
+            "name": "priority_decision",
+            "arguments": {
+              "tasks": [
+                {"name": "Incomplete task", "urgency": 8, "impact": 9}
+              ]
+            }
+          }
+        },
+        "expected_error": {
+          "code": -32602,
+          "message_contains": "missing required field 'effort'"
+        }
+      },
+      {
+        "id": "N2-invalid-values",
+        "trigger": "Urgency out of range.",
+        "rpc_request": {
+          "jsonrpc": "2.0",
+          "id": "N2",
+          "method": "tools/call",
+          "params": {
+            "name": "priority_decision",
+            "arguments": {
+              "tasks": [
+                {"name": "Bad score", "urgency": 11, "impact": 9, "effort": 2}
+              ]
+            }
+          }
+        },
+        "expected_error": {
+          "code": -32602,
+          "message_contains": "must be between 0 and 10"
+        }
+      },
+      {
+        "id": "N3-external-failure",
+        "trigger": "Platform failure simulation (malformed JSON body).",
+        "http_request": "POST /mcp with invalid JSON payload",
+        "expected_http": 400,
+        "expected_body_contains": "Invalid JSON body"
+      }
+    ],
+    "stability_checks": {
+      "three_call_sequence": [
+        "initialize",
+        "tools/list",
+        "tools/call"
+      ],
+      "expected": "All three return successfully on repeated runs without state carryover.",
+      "same_input_same_output": true
+    }
+  },
+  "submission_phase_preserved_tests": true
+}
