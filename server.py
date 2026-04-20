@@ -13,7 +13,7 @@ import traceback
 from pathlib import Path
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 APP_NAME = "Priority Decision"
 APP_VERSION = "1.0.0"
@@ -21,6 +21,7 @@ APP_DESCRIPTION = (
     "Determines the top-priority task from a list of tasks based on urgency, impact, and effort."
 )
 SUPPORT_EMAIL = "sidcraigau@gmail.com"
+EFFECTIVE_DATE = "2026-04-20"
 
 MCP_PROTOCOL_VERSION = "2024-11-05"
 TOOL_NAME = "priority_decision"
@@ -56,9 +57,11 @@ HOME_HTML = f"""<!doctype html>
   <p>Support: <a href="mailto:{SUPPORT_EMAIL}">{SUPPORT_EMAIL}</a></p>
 </body>
 </html>
+"""
+
 PRIVACY_TEXT = f"""Privacy Policy for {APP_NAME}
 
-Effective date: 2026-04-20
+Effective date: {EFFECTIVE_DATE}
 
 1) Data Categories Collected
 - Task payload content submitted to /mcp for processing:
@@ -99,7 +102,7 @@ Effective date: 2026-04-20
 
 TERMS_TEXT = f"""Terms of Service for {APP_NAME}
 
-Effective date: 2026-04-20
+Effective date: {EFFECTIVE_DATE}
 
 1) Service Scope
 - This app ranks tasks by urgency, impact, and effort.
@@ -380,12 +383,18 @@ class AppHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
-    def _write_static_html(self, path: Path) -> None:
+    def _write_static_html(self, path: Path, fallback_text: Optional[str] = None) -> None:
         try:
             body = path.read_text(encoding="utf-8")
         except FileNotFoundError:
-            self._write(HTTPStatus.NOT_FOUND, "Not Found")
-            return
+            if fallback_text is None:
+                self._write(HTTPStatus.NOT_FOUND, "Not Found")
+                return
+            body = (
+                "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\" />"
+                "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\" />"
+                f"<title>{APP_NAME}</title></head><body><pre>{fallback_text}</pre></body></html>"
+            )
         self._write(HTTPStatus.OK, body, content_type="text/html; charset=utf-8")
 
     def do_GET(self) -> None:
@@ -399,7 +408,12 @@ class AppHandler(BaseHTTPRequestHandler):
 
         static_path = STATIC_PAGES.get(self.path)
         if static_path is not None:
-            self._write_static_html(static_path)
+            fallback_map = {
+                "/privacy": PRIVACY_TEXT,
+                "/terms": TERMS_TEXT,
+                "/support": SUPPORT_TEXT,
+            }
+            self._write_static_html(static_path, fallback_text=fallback_map.get(self.path))
             return
 
         if self.path == "/.well-known/openai-apps-challenge":
